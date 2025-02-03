@@ -116,7 +116,7 @@ pitch_type_colors = {
     'ChangeUp': 'darkgreen'
 }
 
-pitch_result_shapes = {
+play_result_shapes = {
     'Out': 'x',
     'Sacrifice':'plus',
     'Single': 'circle',
