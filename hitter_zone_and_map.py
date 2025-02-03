@@ -90,12 +90,12 @@ fig_strikezone.update_layout(
     xaxis_title="Plate Location Side",
     yaxis_title="Plate Location Height",
     xaxis=dict(range=[-1.5, 1.5]),
-    yaxis=dict(range=[1, 3.5]),
+    yaxis=dict(range=[1, 4]),
 )
 
 st.plotly_chart(fig_strikezone)
 
-# **Batted Ball Plot with Field Outline**
+# **Batted Ball Plot with Field Outline and Foul Lines**
 data['Bearing_rad'] = np.radians(data['Bearing'])
 data['x'] = data['Distance'] * np.sin(data['Bearing_rad'])
 data['y'] = data['Distance'] * np.cos(data['Bearing_rad'])
@@ -126,7 +126,6 @@ angles = np.linspace(-45, 45, 500)
 distances = np.interp(angles, [-45, -30, 0, 30, 45], [foul_pole_left, lc_gap, cf, rc_gap, foul_pole_right])
 x_outfield = distances * np.sin(np.radians(angles))
 y_outfield = distances * np.cos(np.radians(angles))
-
 fig_batted_ball.add_trace(go.Scatter(x=x_outfield, y=y_outfield, mode='lines', line=dict(color='black')))
 
 # Infield diamond
@@ -134,6 +133,14 @@ infield_side = 90
 bases_x = [0, infield_side, 0, -infield_side, 0]
 bases_y = [0, infield_side, 2 * infield_side, infield_side, 0]
 fig_batted_ball.add_trace(go.Scatter(x=bases_x, y=bases_y, mode='lines', line=dict(color='brown', width=2)))
+
+# Foul lines
+foul_x_left = [-foul_pole_left * np.sin(np.radians(45)), 0]
+foul_y_left = [foul_pole_left * np.cos(np.radians(45)), 0]
+foul_x_right = [foul_pole_right * np.sin(np.radians(45)), 0]
+foul_y_right = [foul_pole_right * np.cos(np.radians(45)), 0]
+fig_batted_ball.add_trace(go.Scatter(x=foul_x_left, y=foul_y_left, mode='lines', line=dict(color='black', dash='dash')))
+fig_batted_ball.add_trace(go.Scatter(x=foul_x_right, y=foul_y_right, mode='lines', line=dict(color='black', dash='dash')))
 
 fig_batted_ball.update_traces(marker=dict(size=12))
 fig_batted_ball.update_layout(
