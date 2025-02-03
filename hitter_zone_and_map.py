@@ -29,6 +29,11 @@ pitch_type_shapes = {
     'ChangeUp': 'square'
 }
 
+# Ensure consistent category ordering AFTER filtering
+pitch_type_order = ['Fastball', 'Sinker', 'Cutter', 'Slider', 'Curveball', 'Sweeper', 'Splitter', 'ChangeUp']
+play_result_order = ['Single', 'Double', 'Triple', 'HomeRun', 'Out']
+
+
 def get_marker_shape(pitch_type):
     return pitch_type_shapes.get(pitch_type, 'diamond')  # Default to diamond if not listed
 
