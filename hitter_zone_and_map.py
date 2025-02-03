@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import numpy as np
 
 # Load CSV files and combine them
@@ -59,7 +60,7 @@ selected_batter = st.selectbox("Select a Batter", options=unique_batters)
 
 data = data[data['Batter'] == selected_batter]
 
-# **Strike Zone Plot**
+# **Strike Zone Plot with Strike Zone Box**
 fig_strikezone = px.scatter(
     data,
     x='PlateLocSide', y='PlateLocHeight',
@@ -77,6 +78,13 @@ fig_strikezone = px.scatter(
     title=f"Strike Zone Plot for {selected_batter}"
 )
 
+fig_strikezone.add_shape(
+    go.layout.Shape(
+        type="rect",
+        x0=-0.83, x1=0.83, y0=1.5, y1=3.3775,
+        line=dict(color="black", width=2),
+    )
+)
 fig_strikezone.update_traces(marker=dict(size=10))
 fig_strikezone.update_layout(
     xaxis_title="Plate Location Side",
@@ -87,7 +95,7 @@ fig_strikezone.update_layout(
 
 st.plotly_chart(fig_strikezone)
 
-# **Batted Ball Plot**
+# **Batted Ball Plot with Field Outline**
 data['Bearing_rad'] = np.radians(data['Bearing'])
 data['x'] = data['Distance'] * np.sin(data['Bearing_rad'])
 data['y'] = data['Distance'] * np.cos(data['Bearing_rad'])
@@ -107,6 +115,25 @@ fig_batted_ball = px.scatter(
     },
     title=f"Batted Ball Locations for {selected_batter}"
 )
+
+# Outfield fence
+foul_pole_left = 330
+lc_gap = 365
+cf = 390
+rc_gap = 365
+foul_pole_right = 330
+angles = np.linspace(-45, 45, 500)
+distances = np.interp(angles, [-45, -30, 0, 30, 45], [foul_pole_left, lc_gap, cf, rc_gap, foul_pole_right])
+x_outfield = distances * np.sin(np.radians(angles))
+y_outfield = distances * np.cos(np.radians(angles))
+
+fig_batted_ball.add_trace(go.Scatter(x=x_outfield, y=y_outfield, mode='lines', line=dict(color='black')))
+
+# Infield diamond
+infield_side = 90
+bases_x = [0, infield_side, 0, -infield_side, 0]
+bases_y = [0, infield_side, 2 * infield_side, infield_side, 0]
+fig_batted_ball.add_trace(go.Scatter(x=bases_x, y=bases_y, mode='lines', line=dict(color='brown', width=2)))
 
 fig_batted_ball.update_traces(marker=dict(size=12))
 fig_batted_ball.update_layout(
