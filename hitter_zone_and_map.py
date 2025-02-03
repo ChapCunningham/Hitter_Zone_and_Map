@@ -118,7 +118,7 @@ pitch_type_colors = {
 
 play_result_shapes = {
     'Out': 'x',
-    'Sacrifice':'plus',
+    'Sacrifice':'cross',
     'Single': 'circle',
     'Double': 'square',
     'Triple': 'triangle-up',
