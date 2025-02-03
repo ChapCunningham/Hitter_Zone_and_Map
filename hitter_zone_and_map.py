@@ -90,7 +90,7 @@ fig_strikezone.update_layout(
     xaxis_title="Plate Location Side",
     yaxis_title="Plate Location Height",
     xaxis=dict(range=[-1.5, 1.5]),
-    yaxis=dict(range=[1, 4]),
+    yaxis=dict(range=[1, 5]),
 )
 
 st.plotly_chart(fig_strikezone)
