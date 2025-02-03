@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import numpy as np
 
 # Load CSV files and combine them
-file_paths = ["Spring Intrasquads MASTER.csv","filtered_fall_trackman.csv","WINTER_ALL_trackman.csv"]  # Add more file paths if needed
+file_paths = ["Spring Intrasquads MASTER.csv", "filtered_fall_trackman.csv", "WINTER_ALL_trackman.csv"]
 dataframes = [pd.read_csv(fp, low_memory=False) for fp in file_paths]
 data = pd.concat(dataframes, ignore_index=True)
 
@@ -19,36 +19,22 @@ data = data[data['PitchCall'] == 'InPlay']
 
 # Define consistent pitch type colors
 pitch_type_colors = {
-    'Fastball': 'red',
-    'Sinker': 'darkred',
-    'Cutter': 'blue',
-    'Slider': 'darkblue',
-    'Curveball': 'purple',
-    'Sweeper': 'darkpurple',
-    'Splitter': 'green',
-    'ChangeUp': 'darkgreen'
+    'Fastball': 'red', 'Sinker': 'darkred', 'Cutter': 'blue',
+    'Slider': 'darkblue', 'Curveball': 'purple', 'Sweeper': 'darkpurple',
+    'Splitter': 'green', 'ChangeUp': 'darkgreen'
 }
 
 # Define marker shapes for pitch types
 pitch_type_shapes = {
-    'Fastball': 'circle',
-    'Sinker': 'circle',
-    'Cutter': 'triangle-up',
-    'Slider': 'triangle-up',
-    'Curveball': 'triangle-up',
-    'Sweeper': 'triangle-up',
-    'Splitter': 'square',
-    'ChangeUp': 'square'
+    'Fastball': 'circle', 'Sinker': 'circle', 'Cutter': 'triangle-up',
+    'Slider': 'triangle-up', 'Curveball': 'triangle-up', 'Sweeper': 'triangle-up',
+    'Splitter': 'square', 'ChangeUp': 'square'
 }
 
 # Define play result symbols
 play_result_shapes = {
-    'Out': 'x',
-    'Sacrifice': 'cross',
-    'Single': 'circle',
-    'Double': 'square',
-    'Triple': 'triangle-up',
-    'HomeRun': 'diamond'
+    'Out': 'x', 'Sacrifice': 'cross', 'Single': 'circle',
+    'Double': 'square', 'Triple': 'triangle-up', 'HomeRun': 'diamond'
 }
 
 # Ensure categorical order for consistency
@@ -63,10 +49,7 @@ min_date, max_date = data['Date'].min(), data['Date'].max()
 min_date, max_date = pd.to_datetime(min_date).date(), pd.to_datetime(max_date).date()
 
 date_range = st.slider(
-    "Select Date Range:",
-    min_value=min_date,
-    max_value=max_date,
-    value=(min_date, max_date)
+    "Select Date Range:", min_value=min_date, max_value=max_date, value=(min_date, max_date)
 )
 
 # Convert selected date range back to string format for filtering
@@ -83,100 +66,64 @@ selected_batter = st.selectbox("Select a Batter", options=unique_batters)
 
 data = data[data['Batter'] == selected_batter]
 
-# **Strike Zone Plot with Consistent Colors**
+# Track user selection using session state
+if 'selected_indices' not in st.session_state:
+    st.session_state.selected_indices = []
+
+# Convert selected points to a highlighted boolean column
+data['highlight'] = data.index.isin(st.session_state.selected_indices)
+
+# **Strike Zone Plot with Clickable Points**
 fig_strikezone = px.scatter(
-    data,
-    x='PlateLocSide', y='PlateLocHeight',
-    color='TaggedPitchType',
-    color_discrete_map=pitch_type_colors,  # Consistent Colors
-    symbol='TaggedPitchType',
-    symbol_map=pitch_type_shapes,
-    category_orders={'TaggedPitchType': pitch_type_order},
-    hover_data={
-        'Date': True,
-        'Pitcher': True,
-        'TaggedPitchType': True,
-        'ExitSpeed': True,
-        'Angle': True,
-        'PlayResult': True,
-    },
+    data, x='PlateLocSide', y='PlateLocHeight', color='TaggedPitchType',
+    color_discrete_map=pitch_type_colors, symbol='TaggedPitchType',
+    symbol_map=pitch_type_shapes, category_orders={'TaggedPitchType': pitch_type_order},
+    hover_data={'Date': True, 'Pitcher': True, 'TaggedPitchType': True,
+                'ExitSpeed': True, 'Angle': True, 'PlayResult': True},
     title=f"Strike Zone Plot for {selected_batter}"
 )
 
-fig_strikezone.add_shape(
-    go.layout.Shape(
-        type="rect",
-        x0=-0.83, x1=0.83, y0=1.5, y1=3.3775,
-        line=dict(color="black", width=2),
-    )
-)
-fig_strikezone.update_traces(marker=dict(size=10))
-fig_strikezone.update_layout(
-    xaxis_title="Plate Location Side",
-    yaxis_title="Plate Location Height",
-    xaxis=dict(range=[-2, 2]),
-    yaxis=dict(range=[1.15, 3.75]),
+# Strike zone box
+fig_strikezone.add_shape(go.layout.Shape(type="rect", x0=-0.83, x1=0.83, y0=1.5, y1=3.3775,
+                                         line=dict(color="black", width=2)))
+
+# Update marker size based on selection
+fig_strikezone.update_traces(
+    marker=dict(size=data['highlight'].apply(lambda x: 14 if x else 10))
 )
 
-st.plotly_chart(fig_strikezone)
+st.plotly_chart(fig_strikezone, use_container_width=True)
 
-# **Batted Ball Plot with Field Outline and Consistent Colors**
+# **Batted Ball Plot with Clickable Points**
 data['Bearing_rad'] = np.radians(data['Bearing'])
 data['x'] = data['Distance'] * np.sin(data['Bearing_rad'])
 data['y'] = data['Distance'] * np.cos(data['Bearing_rad'])
 
 fig_batted_ball = px.scatter(
-    data,
-    x='x', y='y',
-    color='TaggedPitchType',
-    color_discrete_map=pitch_type_colors,  # Consistent Colors
-    category_orders={'TaggedPitchType': pitch_type_order, 'PlayResult': play_result_order},
-    symbol='PlayResult',
-    symbol_map=play_result_shapes,
-    hover_data={
-        'Date': True,
-        'Pitcher': True,
-        'TaggedPitchType': True,
-        'ExitSpeed': True,
-        'Angle': True,
-        'PlayResult': True,
-    },
+    data, x='x', y='y', color='TaggedPitchType',
+    color_discrete_map=pitch_type_colors, category_orders={'TaggedPitchType': pitch_type_order},
+    symbol='PlayResult', symbol_map=play_result_shapes,
+    hover_data={'Date': True, 'Pitcher': True, 'TaggedPitchType': True,
+                'ExitSpeed': True, 'Angle': True, 'PlayResult': True},
     title=f"Batted Ball Locations for {selected_batter}"
 )
 
-# Outfield fence
-foul_pole_left = 330
-lc_gap = 365
-cf = 390
-rc_gap = 365
-foul_pole_right = 330
-angles = np.linspace(-45, 45, 500)
-distances = np.interp(angles, [-45, -30, 0, 30, 45], [foul_pole_left, lc_gap, cf, rc_gap, foul_pole_right])
-x_outfield = distances * np.sin(np.radians(angles))
-y_outfield = distances * np.cos(np.radians(angles))
-fig_batted_ball.add_trace(go.Scatter(x=x_outfield, y=y_outfield, mode='lines', line=dict(color='black')))
-
-# Infield diamond
-infield_side = 90
-bases_x = [0, infield_side, 0, -infield_side, 0]
-bases_y = [0, infield_side, 2 * infield_side, infield_side, 0]
-fig_batted_ball.add_trace(go.Scatter(x=bases_x, y=bases_y, mode='lines', line=dict(color='brown', width=2)))
-
-# Foul lines
-foul_x_left = [-foul_pole_left * np.sin(np.radians(45)), 0]
-foul_y_left = [foul_pole_left * np.cos(np.radians(45)), 0]
-foul_x_right = [foul_pole_right * np.sin(np.radians(45)), 0]
-foul_y_right = [foul_pole_right * np.cos(np.radians(45)), 0]
-fig_batted_ball.add_trace(go.Scatter(x=foul_x_left, y=foul_y_left, mode='lines', line=dict(color='black', dash='dash')))
-fig_batted_ball.add_trace(go.Scatter(x=foul_x_right, y=foul_y_right, mode='lines', line=dict(color='black', dash='dash')))
-
-fig_batted_ball.update_traces(marker=dict(size=12))
-fig_batted_ball.update_layout(
-    xaxis_title="Field X Position",
-    yaxis_title="Field Y Position",
-    xaxis=dict(showgrid=False),
-    yaxis=dict(showgrid=False),
-    plot_bgcolor="white"
+# Update marker size based on selection
+fig_batted_ball.update_traces(
+    marker=dict(size=data['highlight'].apply(lambda x: 14 if x else 10))
 )
 
-st.plotly_chart(fig_batted_ball)
+st.plotly_chart(fig_batted_ball, use_container_width=True)
+
+# **Handle User Clicks**
+selected_data = st.session_state.get("selected_indices", [])
+
+if st.button("Clear Selections"):
+    st.session_state.selected_indices = []
+
+# Capture selected data points
+selected_points = st.session_state.get("selected_data", [])
+
+if selected_points:
+    selected_indices = [data.index[data['Date'] == row['Date']].tolist()[0] for row in selected_points]
+    st.session_state.selected_indices = selected_indices
