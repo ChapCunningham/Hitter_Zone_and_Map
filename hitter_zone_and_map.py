@@ -179,12 +179,6 @@ fig_batted_ball.update_layout(
     plot_bgcolor="white"
 )
 
-# Increase marker size for selected pitch
-if st.session_state.selected_pitch_id in data.index:
-    fig_batted_ball.update_traces(marker=dict(size=12), selector=dict(mode='markers'))
 
 st.plotly_chart(fig_batted_ball)
 
-# **Handle User Clicks**
-selected_pitch = st.selectbox("Select a pitch (for highlighting)", options=data.index, format_func=lambda x: f"Pitch {x}")
-st.session_state.selected_pitch_id = selected_pitch
