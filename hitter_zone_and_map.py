@@ -17,25 +17,33 @@ data['Date'] = data['Date'].dt.strftime('%Y-%m-%d')
 # Filter only "InPlay" pitch calls
 data = data[data['PitchCall'] == 'InPlay']
 
-# Define marker shapes based on pitch type
-pitch_type_shapes = {
-    'Fastball': 'circle',
-    'Sinker': 'circle',
-    'Cutter': 'triangle-up',
-    'Slider': 'triangle-up',
-    'Curveball': 'triangle-up',
-    'Sweeper': 'triangle-up',
-    'Splitter': 'square',
-    'ChangeUp': 'square'
+# Define marker shapes based on play result
+play_result_shapes = {
+    'Single': 'circle',
+    'Double': 'square',
+    'Triple': 'triangle-up',
+    'HomeRun': 'diamond',
+    'Out': 'x'
 }
 
-# Ensure consistent category ordering AFTER filtering
+# Define consistent color mapping for TaggedPitchType
+pitch_type_colors = {
+    'Fastball': 'red',
+    'Sinker': 'darkred',
+    'Cutter': 'blue',
+    'Slider': 'darkblue',
+    'Curveball': 'purple',
+    'Sweeper': 'darkpurple',
+    'Splitter': 'green',
+    'ChangeUp': 'darkgreen'
+}
+
+def get_marker_shape(play_result):
+    return play_result_shapes.get(play_result, 'circle')  # Default to circle if not listed
+
+# Ensure consistent category ordering
 pitch_type_order = ['Fastball', 'Sinker', 'Cutter', 'Slider', 'Curveball', 'Sweeper', 'Splitter', 'ChangeUp']
 play_result_order = ['Single', 'Double', 'Triple', 'HomeRun', 'Out']
-
-
-def get_marker_shape(pitch_type):
-    return pitch_type_shapes.get(pitch_type, 'diamond')  # Default to diamond if not listed
 
 # Streamlit UI
 st.title("Hitting Summary Viewer (In-Play Data)")
@@ -65,72 +73,16 @@ selected_batter = st.selectbox("Select a Batter", options=unique_batters)
 
 data = data[data['Batter'] == selected_batter]
 
-# **Strike Zone Plot with Strike Zone Box**
-fig_strikezone = px.scatter(
-    data,
-    x='PlateLocSide', y='PlateLocHeight',
-    color='TaggedPitchType',
-    symbol='TaggedPitchType',
-    symbol_map=pitch_type_shapes,
-    hover_data={
-        'Date': True,
-        'Pitcher': True,
-        'TaggedPitchType': True,
-        'ExitSpeed': True,
-        'Angle': True,
-        'PlayResult': True,
-    },
-    title=f"Strike Zone Plot for {selected_batter}"
-)
-
-fig_strikezone.add_shape(
-    go.layout.Shape(
-        type="rect",
-        x0=-0.83, x1=0.83, y0=1.5, y1=3.3775,
-        line=dict(color="black", width=2),
-    )
-)
-fig_strikezone.update_traces(marker=dict(size=10))
-fig_strikezone.update_layout(
-    xaxis_title="Plate Location Side",
-    yaxis_title="Plate Location Height",
-    xaxis=dict(range=[-2, 2]),
-    yaxis=dict(range=[1.15, 3.75]),
-)
-
-st.plotly_chart(fig_strikezone)
-
 # **Batted Ball Plot with Field Outline and Foul Lines**
 data['Bearing_rad'] = np.radians(data['Bearing'])
 data['x'] = data['Distance'] * np.sin(data['Bearing_rad'])
 data['y'] = data['Distance'] * np.cos(data['Bearing_rad'])
-
-pitch_type_colors = {
-    'Fastball': 'red',
-    'Sinker': 'darkred',
-    'Cutter': 'blue',
-    'Slider': 'darkblue',
-    'Curveball': 'purple',
-    'Sweeper': 'darkpurple',
-    'Splitter': 'green',
-    'ChangeUp': 'darkgreen'
-}
-
-play_result_shapes = {
-    'Out': 'x',
-    'Sacrifice':'cross',
-    'Single': 'circle',
-    'Double': 'square',
-    'Triple': 'triangle-up',
-    'HomeRun': 'diamond'
-}
 
 fig_batted_ball = px.scatter(
     data,
     x='x', y='y',
     color='TaggedPitchType',
     color_discrete_map=pitch_type_colors,  # Ensure consistent colors
-    category_orders={'TaggedPitchType': pitch_type_order, 'PlayResult': play_result_order},
     symbol='PlayResult',
     symbol_map=play_result_shapes,
     hover_data={
@@ -144,8 +96,24 @@ fig_batted_ball = px.scatter(
     title=f"Batted Ball Locations for {selected_batter}"
 )
 
+# Custom Legend for Pitch Type
+pitch_legend = [go.Scatter(
+    x=[None], y=[None],
+    mode='markers',
+    marker=dict(size=10, color=color),
+    name=pitch_type
+) for pitch_type, color in pitch_type_colors.items()]
 
+# Custom Legend for Play Result
+play_legend = [go.Scatter(
+    x=[None], y=[None],
+    mode='markers',
+    marker=dict(size=10, color='black', symbol=symbol),
+    name=play_result
+) for play_result, symbol in play_result_shapes.items()]
 
+for trace in pitch_legend + play_legend:
+    fig_batted_ball.add_trace(trace)
 
 # Outfield fence
 foul_pole_left = 330
