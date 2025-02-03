@@ -96,24 +96,27 @@ fig_batted_ball = px.scatter(
     title=f"Batted Ball Locations for {selected_batter}"
 )
 
-# Custom Legend for Pitch Type
-pitch_legend = [go.Scatter(
-    x=[None], y=[None],
-    mode='markers',
-    marker=dict(size=10, color=color),
-    name=pitch_type
-) for pitch_type, color in pitch_type_colors.items()]
-
 # Custom Legend for Play Result
 play_legend = [go.Scatter(
     x=[None], y=[None],
     mode='markers',
-    marker=dict(size=10, color='black', symbol=symbol),
+    marker=dict(size=12, symbol=symbol, color='black'),  # Keep it black for all results
     name=play_result
 ) for play_result, symbol in play_result_shapes.items()]
 
+
+# Custom Legend for Pitch Type
+pitch_legend = [go.Scatter(
+    x=[None], y=[None],
+    mode='markers',
+    marker=dict(size=12, color=color, symbol='circle'),  # Ensure all pitch types use circles
+    name=pitch_type
+) for pitch_type, color in pitch_type_colors.items()]
+
+
 for trace in pitch_legend + play_legend:
     fig_batted_ball.add_trace(trace)
+
 
 # Outfield fence
 foul_pole_left = 330
