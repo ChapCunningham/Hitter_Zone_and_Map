@@ -100,11 +100,26 @@ data['Bearing_rad'] = np.radians(data['Bearing'])
 data['x'] = data['Distance'] * np.sin(data['Bearing_rad'])
 data['y'] = data['Distance'] * np.cos(data['Bearing_rad'])
 
+pitch_type_colors = {
+    'Fastball': 'red',
+    'Sinker': 'darkred',
+    'Cutter': 'blue',
+    'Slider': 'darkblue',
+    'Curveball': 'purple',
+    'Sweeper': 'darkpurple',
+    'Splitter': 'green',
+    'ChangeUp': 'darkgreen'
+}
+
+
 fig_batted_ball = px.scatter(
     data,
     x='x', y='y',
-    color='PlayResult',
+    color='TaggedPitchType',
+    color_discrete_map=pitch_type_colors,  # Apply fixed colors
+    category_orders={'TaggedPitchType': pitch_type_order, 'PlayResult': play_result_order},
     symbol='PlayResult',
+    symbol_map=play_result_shapes,
     hover_data={
         'Date': True,
         'Pitcher': True,
