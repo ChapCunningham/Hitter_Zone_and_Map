@@ -144,36 +144,7 @@ fig_batted_ball = px.scatter(
     title=f"Batted Ball Locations for {selected_batter}"
 )
 
-# Separate legends for pitch types and play results
-fig_batted_ball.update_traces(marker=dict(line=dict(width=1, color='black')))
-fig_batted_ball.update_layout(
-    legend_title_text='Legend',
-    legend=dict(groupclick="toggleitem"),
-    updatemenus=[
-        {
-            "buttons": [
-                {
-                    "label": "Pitch Type",
-                    "method": "update",
-                    "args": [
-                        {"visible": [True] * len(pitch_type_colors), "marker.color": list(pitch_type_colors.values())},
-                        {"title": "Pitch Type Legend"}
-                    ]
-                },
-                {
-                    "label": "Play Result",
-                    "method": "update",
-                    "args": [
-                        {"visible": [True] * len(play_result_shapes), "marker.symbol": list(play_result_shapes.values())},
-                        {"title": "Play Result Legend"}
-                    ]
-                }
-            ],
-            "direction": "down",
-            "showactive": True,
-        }
-    ]
-)
+
 
 # Outfield fence
 foul_pole_left = 330
