@@ -89,7 +89,7 @@ fig_strikezone.update_traces(marker=dict(size=10))
 fig_strikezone.update_layout(
     xaxis_title="Plate Location Side",
     yaxis_title="Plate Location Height",
-    xaxis=dict(range=[-1.5, 1.5]),
+    xaxis=dict(range=[-2, 2]),
     yaxis=dict(range=[1.15, 3.75]),
 )
 
