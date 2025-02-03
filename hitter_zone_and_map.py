@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import numpy as np
 
 # Load CSV files and combine them
-file_paths = ["Spring Intrasquads MASTER.csv"]  # Add more file paths if needed
+file_paths = ["Spring Intrasquads MASTER.csv","filtered_fall_trackman.csv","WINTER_ALL_trackman.csv"]  # Add more file paths if needed
 dataframes = [pd.read_csv(fp, low_memory=False) for fp in file_paths]
 data = pd.concat(dataframes, ignore_index=True)
 
