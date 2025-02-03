@@ -123,7 +123,7 @@ pitch_result_shapes = {
     'Double': 'square',
     'Triple': 'triangle-up',
     'HomeRun': 'diamond'
-
+}
 
 fig_batted_ball = px.scatter(
     data,
