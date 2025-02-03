@@ -33,9 +33,9 @@ pitch_type_colors = {
     'Cutter': 'blue',
     'Slider': 'darkblue',
     'Curveball': 'purple',
-    'Sweeper': 'darkpurple',
+    'Sweeper': 'purple',
     'Splitter': 'green',
-    'ChangeUp': 'darkgreen'
+    'ChangeUp': 'green'
 }
 
 def get_marker_shape(play_result):
