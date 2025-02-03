@@ -36,9 +36,22 @@ st.title("Hitting Summary Viewer (In-Play Data)")
 
 # Date range selection
 min_date, max_date = data['Date'].min(), data['Date'].max()
-date_range = st.slider("Select Date Range:", min_value=pd.to_datetime(min_date), max_value=pd.to_datetime(max_date), value=(pd.to_datetime(min_date), pd.to_datetime(max_date)))
+min_date, max_date = pd.to_datetime(min_date).date(), pd.to_datetime(max_date).date()
 
-data = data[(data['Date'] >= date_range[0].strftime('%Y-%m-%d')) & (data['Date'] <= date_range[1].strftime('%Y-%m-%d'))]
+date_range = st.slider(
+    "Select Date Range:",
+    min_value=min_date,
+    max_value=max_date,
+    value=(min_date, max_date)
+)
+
+# Convert selected date range back to string format for filtering
+start_date, end_date = date_range
+start_date = pd.to_datetime(start_date).strftime('%Y-%m-%d')
+end_date = pd.to_datetime(end_date).strftime('%Y-%m-%d')
+
+# Apply the date filter
+data = data[(data['Date'] >= start_date) & (data['Date'] <= end_date)]
 
 # Select batter
 unique_batters = sorted(data['Batter'].unique())
@@ -105,4 +118,3 @@ fig_batted_ball.update_layout(
 )
 
 st.plotly_chart(fig_batted_ball)
-
