@@ -17,7 +17,19 @@ data['Date'] = data['Date'].dt.strftime('%Y-%m-%d')
 # Filter only "InPlay" pitch calls
 data = data[data['PitchCall'] == 'InPlay']
 
-# Define marker shapes based on pitch type
+# Define consistent pitch type colors
+pitch_type_colors = {
+    'Fastball': 'red',
+    'Sinker': 'darkred',
+    'Cutter': 'blue',
+    'Slider': 'darkblue',
+    'Curveball': 'purple',
+    'Sweeper': 'darkpurple',
+    'Splitter': 'green',
+    'ChangeUp': 'darkgreen'
+}
+
+# Define marker shapes for pitch types
 pitch_type_shapes = {
     'Fastball': 'circle',
     'Sinker': 'circle',
@@ -29,13 +41,19 @@ pitch_type_shapes = {
     'ChangeUp': 'square'
 }
 
-# Ensure consistent category ordering AFTER filtering
-pitch_type_order = ['Fastball', 'Sinker', 'Cutter', 'Slider', 'Curveball', 'Sweeper', 'Splitter', 'ChangeUp']
+# Define play result symbols
+play_result_shapes = {
+    'Out': 'x',
+    'Sacrifice': 'cross',
+    'Single': 'circle',
+    'Double': 'square',
+    'Triple': 'triangle-up',
+    'HomeRun': 'diamond'
+}
+
+# Ensure categorical order for consistency
+pitch_type_order = list(pitch_type_colors.keys())
 play_result_order = ['Single', 'Double', 'Triple', 'HomeRun', 'Out']
-
-
-def get_marker_shape(pitch_type):
-    return pitch_type_shapes.get(pitch_type, 'diamond')  # Default to diamond if not listed
 
 # Streamlit UI
 st.title("Hitting Summary Viewer (In-Play Data)")
@@ -65,13 +83,15 @@ selected_batter = st.selectbox("Select a Batter", options=unique_batters)
 
 data = data[data['Batter'] == selected_batter]
 
-# **Strike Zone Plot with Strike Zone Box**
+# **Strike Zone Plot with Consistent Colors**
 fig_strikezone = px.scatter(
     data,
     x='PlateLocSide', y='PlateLocHeight',
     color='TaggedPitchType',
+    color_discrete_map=pitch_type_colors,  # Consistent Colors
     symbol='TaggedPitchType',
     symbol_map=pitch_type_shapes,
+    category_orders={'TaggedPitchType': pitch_type_order},
     hover_data={
         'Date': True,
         'Pitcher': True,
@@ -100,36 +120,16 @@ fig_strikezone.update_layout(
 
 st.plotly_chart(fig_strikezone)
 
-# **Batted Ball Plot with Field Outline and Foul Lines**
+# **Batted Ball Plot with Field Outline and Consistent Colors**
 data['Bearing_rad'] = np.radians(data['Bearing'])
 data['x'] = data['Distance'] * np.sin(data['Bearing_rad'])
 data['y'] = data['Distance'] * np.cos(data['Bearing_rad'])
-
-pitch_type_colors = {
-    'Fastball': 'red',
-    'Sinker': 'darkred',
-    'Cutter': 'blue',
-    'Slider': 'darkblue',
-    'Curveball': 'purple',
-    'Sweeper': 'darkpurple',
-    'Splitter': 'green',
-    'ChangeUp': 'darkgreen'
-}
-
-play_result_shapes = {
-    'Out': 'x',
-    'Sacrifice':'cross',
-    'Single': 'circle',
-    'Double': 'square',
-    'Triple': 'triangle-up',
-    'HomeRun': 'diamond'
-}
 
 fig_batted_ball = px.scatter(
     data,
     x='x', y='y',
     color='TaggedPitchType',
-    color_discrete_map=pitch_type_colors,  # Ensure consistent colors
+    color_discrete_map=pitch_type_colors,  # Consistent Colors
     category_orders={'TaggedPitchType': pitch_type_order, 'PlayResult': play_result_order},
     symbol='PlayResult',
     symbol_map=play_result_shapes,
