@@ -129,7 +129,7 @@ fig_batted_ball = px.scatter(
     data,
     x='x', y='y',
     color='TaggedPitchType',
-    color_discrete_map=pitch_type_colors,  # Apply fixed colors
+    color_discrete_map=pitch_type_colors,  # Ensure consistent colors
     category_orders={'TaggedPitchType': pitch_type_order, 'PlayResult': play_result_order},
     symbol='PlayResult',
     symbol_map=play_result_shapes,
